@@ -1,0 +1,17 @@
+# .gitignore — combined .NET + Angular/Node
+## .NET
+server/**/bin/
+server/**/obj/
+*.user
+.vs/
+
+## Angular / Node
+client/node_modules/
+client/dist/
+client/.angular/
+
+## Environment / secrets — never commit these
+**/appsettings.Development.json
+**/appsettings.Production.json
+client/src/environments/environment.prod.ts
+.env
