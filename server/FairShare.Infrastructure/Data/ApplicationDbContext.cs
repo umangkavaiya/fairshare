@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using FairShare.Domain.Entities;
+
+namespace FairShare.Infrastructure.Data;
+
+public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+    public DbSet<Group> Groups => Set<Group>();
+    public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
+    public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<ExpenseSplit> ExpenseSplits => Set<ExpenseSplit>();
+    public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Group>(e =>
+        {
+            e.HasOne(g => g.CreatedBy).WithMany()
+             .HasForeignKey(g => g.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<GroupMember>(e =>
+        {
+            e.HasIndex(gm => gm.UserId);
+            e.HasIndex(gm => new { gm.GroupId, gm.UserId }).IsUnique();
+            e.HasOne(gm => gm.Group).WithMany(g => g.Members)
+             .HasForeignKey(gm => gm.GroupId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(gm => gm.User).WithMany()
+             .HasForeignKey(gm => gm.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Expense>(e =>
+        {
+            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.CurrencyCode).HasMaxLength(3).IsFixedLength();
+            e.Property(x => x.RowVersion).IsRowVersion();
+            e.HasIndex(x => x.GroupId);
+            e.HasIndex(x => x.PaidByUserId);
+            e.HasIndex(x => x.ExpenseDate);
+            e.HasOne(x => x.Group).WithMany(g => g.Expenses)
+             .HasForeignKey(x => x.GroupId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.PaidBy).WithMany()
+             .HasForeignKey(x => x.PaidByUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Category).WithMany()
+             .HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<ExpenseSplit>(e =>
+        {
+            e.Property(x => x.AmountOwed).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Percentage).HasColumnType("decimal(5,2)");
+            e.HasIndex(x => x.UserId);
+            e.HasIndex(x => new { x.ExpenseId, x.UserId }).IsUnique();
+            e.HasOne(x => x.Expense).WithMany(x => x.Splits)
+             .HasForeignKey(x => x.ExpenseId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.User).WithMany()
+             .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+}
