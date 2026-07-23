@@ -1,12 +1,11 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, User } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // Access token lives in memory ONLY — never localStorage, never a JS-readable cookie
   private accessToken: string | null = null;
   readonly currentUser = signal<User | null>(null);
 
@@ -47,6 +46,19 @@ export class AuthService {
           this.currentUser.set(null);
         }),
       );
+  }
+
+  // Called once at app startup. Silently attempts to re-establish a session
+  // from the httpOnly refresh cookie, if one still exists and is valid.
+  // Never throws — a failed attempt just means "not logged in," which is a normal state.
+  initializeSession(): Observable<AuthResponse | null> {
+    return this.refresh().pipe(
+      catchError(() => {
+        this.accessToken = null;
+        this.currentUser.set(null);
+        return of(null);
+      }),
+    );
   }
 
   getAccessToken(): string | null {
