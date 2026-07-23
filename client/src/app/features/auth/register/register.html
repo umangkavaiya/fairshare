@@ -1,0 +1,36 @@
+<div class="max-w-sm mx-auto mt-16 p-6">
+  <h1 class="text-2xl font-bold mb-6">Create your FairShare account</h1>
+  <form (ngSubmit)="onSubmit()" class="space-y-4">
+    <input
+      [(ngModel)]="displayName"
+      name="displayName"
+      type="text"
+      placeholder="Display name"
+      class="w-full border rounded px-3 py-2"
+      required
+    />
+    <input
+      [(ngModel)]="email"
+      name="email"
+      type="email"
+      placeholder="Email"
+      class="w-full border rounded px-3 py-2"
+      required
+    />
+    <input
+      [(ngModel)]="password"
+      name="password"
+      type="password"
+      placeholder="Password"
+      class="w-full border rounded px-3 py-2"
+      required
+    />
+    @if (errorMessage) {
+      <p class="text-red-600 text-sm">{{ errorMessage }}</p>
+    }
+    <button type="submit" class="w-full bg-blue-600 text-white rounded py-2">Register</button>
+  </form>
+  <p class="mt-4 text-sm">
+    Already have an account? <a routerLink="/auth/login" class="text-blue-600">Log in</a>
+  </p>
+</div>

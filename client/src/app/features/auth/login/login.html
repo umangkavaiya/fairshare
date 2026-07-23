@@ -1,0 +1,28 @@
+<div class="max-w-sm mx-auto mt-16 p-6">
+  <h1 class="text-2xl font-bold mb-6">Log in to FairShare</h1>
+  <form (ngSubmit)="onSubmit()" class="space-y-4">
+    <input
+      [(ngModel)]="email"
+      name="email"
+      type="email"
+      placeholder="Email"
+      class="w-full border rounded px-3 py-2"
+      required
+    />
+    <input
+      [(ngModel)]="password"
+      name="password"
+      type="password"
+      placeholder="Password"
+      class="w-full border rounded px-3 py-2"
+      required
+    />
+    @if (errorMessage) {
+      <p class="text-red-600 text-sm">{{ errorMessage }}</p>
+    }
+    <button type="submit" class="w-full bg-blue-600 text-white rounded py-2">Log in</button>
+  </form>
+  <p class="mt-4 text-sm">
+    No account? <a routerLink="/auth/register" class="text-blue-600">Register</a>
+  </p>
+</div>
