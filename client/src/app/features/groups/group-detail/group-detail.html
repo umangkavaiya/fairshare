@@ -1,0 +1,53 @@
+@if (group(); as g) {
+  <div class="max-w-2xl mx-auto mt-10 p-6">
+    <h1 class="text-2xl font-bold">{{ g.name }}</h1>
+    @if (g.description) {
+      <p class="text-gray-600 mt-1">{{ g.description }}</p>
+    }
+    <p class="text-sm text-gray-500 mt-1">
+      Currency: {{ g.defaultCurrency }} · Your role: {{ g.currentUserRole }}
+    </p>
+
+    <h2 class="text-lg font-semibold mt-8 mb-2">Members</h2>
+    <ul class="space-y-2">
+      @for (member of members(); track member.userId) {
+        <li class="flex justify-between items-center border rounded px-3 py-2">
+          <span
+            >{{ member.displayName }}
+            <span class="text-gray-400 text-sm">({{ member.role }})</span></span
+          >
+          @if (g.currentUserRole === 'Admin' && member.role !== 'Admin') {
+            <button (click)="removeMember(member.userId)" class="text-red-600 text-sm">
+              Remove
+            </button>
+          }
+        </li>
+      }
+    </ul>
+
+    @if (g.currentUserRole === 'Admin') {
+      <h2 class="text-lg font-semibold mt-8 mb-2">Invite a member</h2>
+      <input
+        [formControl]="searchControl"
+        placeholder="Search by name or email"
+        class="w-full border rounded px-3 py-2"
+      />
+      @if (inviteError) {
+        <p class="text-red-600 text-sm mt-1">{{ inviteError }}</p>
+      }
+      @if (searchResults().length > 0) {
+        <ul class="border rounded mt-2 divide-y">
+          @for (result of searchResults(); track result.id) {
+            <li class="flex justify-between items-center px-3 py-2">
+              <span
+                >{{ result.displayName }}
+                <span class="text-gray-400 text-sm">{{ result.email }}</span></span
+              >
+              <button (click)="invite(result)" class="text-blue-600 text-sm">Invite</button>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </div>
+}

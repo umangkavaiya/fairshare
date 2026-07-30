@@ -1,0 +1,46 @@
+<div class="max-w-2xl mx-auto mt-10 p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Your groups</h1>
+    <a routerLink="/groups/new" class="bg-blue-600 text-white rounded px-4 py-2">+ New group</a>
+  </div>
+
+  @if (loading()) {
+    <p class="text-gray-500">Loading...</p>
+  } @else if (groups().length === 0) {
+    <p class="text-gray-500">You're not in any groups yet.</p>
+  } @else {
+    <ul class="space-y-3">
+      @for (group of groups(); track group.id) {
+        <li>
+          <a [routerLink]="['/groups', group.id]" class="block border rounded p-4 hover:bg-gray-50">
+            <div class="flex justify-between">
+              <span class="font-semibold">{{ group.name }}</span>
+              <span class="text-sm text-gray-500">{{ group.memberCount }} members</span>
+            </div>
+            @if (group.description) {
+              <p class="text-sm text-gray-600">{{ group.description }}</p>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+
+    <div class="flex justify-between mt-6">
+      <button
+        (click)="prevPage()"
+        [disabled]="page() === 1"
+        class="text-sm text-blue-600 disabled:text-gray-300"
+      >
+        ← Previous
+      </button>
+      <span class="text-sm text-gray-500">Page {{ page() }} of {{ totalPages() }}</span>
+      <button
+        (click)="nextPage()"
+        [disabled]="page() === totalPages()"
+        class="text-sm text-blue-600 disabled:text-gray-300"
+      >
+        Next →
+      </button>
+    </div>
+  }
+</div>
