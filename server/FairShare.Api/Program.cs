@@ -29,7 +29,28 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<ValidationFilter>();
 });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+    {
+        Description = "Enter your JWT access token (no 'Bearer ' prefix needed — Swagger adds it automatically)",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(document => new Microsoft.OpenApi.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document),
+            new List<string>()
+        }
+    });
+});
+
+
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -71,7 +92,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-// builder.Services.AddScoped<IGroupService, GroupService>(); // uncomment once Phase 3's GroupService is added
+builder.Services.AddScoped<IGroupService, GroupService>(); 
 
 // Auto-register every FluentValidation validator in the Application assembly
 builder.Services.AddValidatorsFromAssembly(typeof(FairShare.Application.Interfaces.IAuthService).Assembly);
