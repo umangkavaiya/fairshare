@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<ExpenseSplit> ExpenseSplits => Set<ExpenseSplit>();
     public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -75,5 +76,22 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             e.HasOne(x => x.User).WithMany()
              .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
+
+        builder.Entity<IdempotencyKey>(e =>
+        {
+            e.HasKey(x => x.Key);
+            e.Property(x => x.ResponseBody).HasColumnType("nvarchar(max)");
+            e.HasIndex(x => x.ExpiresAt);
+        });
+
+        // seed a few default categories
+        builder.Entity<ExpenseCategory>().HasData(
+            new ExpenseCategory { Id = 1, Name = "Food & Drink", Icon = "utensils" },
+            new ExpenseCategory { Id = 2, Name = "Transport", Icon = "car" },
+            new ExpenseCategory { Id = 3, Name = "Lodging", Icon = "bed" },
+            new ExpenseCategory { Id = 4, Name = "Utilities", Icon = "bolt" },
+            new ExpenseCategory { Id = 5, Name = "Entertainment", Icon = "film" },
+            new ExpenseCategory { Id = 6, Name = "Other", Icon = "tag" }
+        );
     }
 }

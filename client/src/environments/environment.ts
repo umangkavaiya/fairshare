@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5159/api', // match your actual API port
+  apiUrl: 'https://localhost:7061/api', // match your actual API port
 };

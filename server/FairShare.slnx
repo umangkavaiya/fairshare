@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitattributes" />
+  </Folder>
   <Project Path="FairShare.Api/FairShare.Api.csproj" />
   <Project Path="FairShare.Application/FairShare.Application.csproj" />
   <Project Path="FairShare.Domain/FairShare.Domain.csproj" />

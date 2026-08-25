@@ -22,6 +22,9 @@ public class Expense : BaseEntity
     public bool IsDeleted { get; set; }
     public byte[] RowVersion { get; set; } = null!;
 
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+
     public Group? Group { get; set; }
     public AppUser PaidBy { get; set; } = null!;
     public ExpenseCategory? Category { get; set; }
