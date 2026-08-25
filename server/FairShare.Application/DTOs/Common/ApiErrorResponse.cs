@@ -11,5 +11,6 @@ public class ApiErrorResponse
     public string Message { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
     public string TraceId { get; set; } = string.Empty;
+    public string? CurrentVersion { get; set; }
     public List<string> Errors { get; set; } = new();
 }

@@ -1,11 +1,12 @@
+using FairShare.Application.DTOs.Common;
+using FairShare.Application.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using FairShare.Application.DTOs.Common;
+using System.Threading.Tasks;
 
 namespace FairShare.Api.Middleware;
 
@@ -38,6 +39,7 @@ public class ExceptionHandlingMiddleware
 
         var (statusCode, message, code) = ex switch
         {
+            ConcurrencyConflictException => (HttpStatusCode.Conflict, ex.Message, "CONCURRENCY_CONFLICT"),
             DbUpdateConcurrencyException => (HttpStatusCode.Conflict, "Record has been modified by another user.", "CONCURRENCY_CONFLICT"),
             UnauthorizedAccessException => (HttpStatusCode.Forbidden, ex.Message, "FORBIDDEN"),
             KeyNotFoundException => (HttpStatusCode.NotFound, ex.Message, "NOT_FOUND"),
@@ -57,7 +59,8 @@ public class ExceptionHandlingMiddleware
         {
             Message = message,
             Code = code,
-            TraceId = traceId
+            TraceId = traceId,
+            CurrentVersion = ex is ConcurrencyConflictException cce ? cce.CurrentVersion : null
         };
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
