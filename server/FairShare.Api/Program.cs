@@ -92,7 +92,10 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IGroupService, GroupService>(); 
+builder.Services.AddScoped<IGroupService, GroupService>();
+
+builder.Services.AddScoped<ISplitCalculationService, FairShare.Application.Services.SplitCalculationService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 // Auto-register every FluentValidation validator in the Application assembly
 builder.Services.AddValidatorsFromAssembly(typeof(FairShare.Application.Interfaces.IAuthService).Assembly);
