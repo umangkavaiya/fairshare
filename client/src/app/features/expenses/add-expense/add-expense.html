@@ -1,0 +1,75 @@
+<div class="max-w-lg mx-auto mt-10 p-6">
+  <h1 class="text-2xl font-bold mb-6">Add an expense</h1>
+
+  <div class="space-y-4">
+    <input
+      [(ngModel)]="description"
+      placeholder="Description"
+      class="w-full border rounded px-3 py-2"
+    />
+    <input
+      [(ngModel)]="amount"
+      type="number"
+      step="0.01"
+      placeholder="Amount"
+      class="w-full border rounded px-3 py-2"
+    />
+    <input [(ngModel)]="expenseDate" type="date" class="w-full border rounded px-3 py-2" />
+
+    <select [(ngModel)]="splitType" class="w-full border rounded px-3 py-2">
+      <option value="Equal">Split equally</option>
+      <option value="Exact">Exact amounts</option>
+      <option value="Percentage">By percentage</option>
+    </select>
+
+    <h2 class="font-semibold mt-4">Participants</h2>
+    @for (member of members(); track member.userId) {
+      <div class="flex items-center gap-3 py-1">
+        <input
+          type="checkbox"
+          [checked]="selectedUserIds.has(member.userId)"
+          (change)="toggleParticipant(member.userId)"
+        />
+        <span class="flex-1">{{ member.displayName }}</span>
+
+        @if (splitType === 'Exact' && selectedUserIds.has(member.userId)) {
+          <input
+            type="number"
+            step="0.01"
+            [(ngModel)]="exactAmounts[member.userId]"
+            class="w-24 border rounded px-2 py-1"
+            placeholder="0.00"
+          />
+        }
+        @if (splitType === 'Percentage' && selectedUserIds.has(member.userId)) {
+          <input
+            type="number"
+            step="0.01"
+            [(ngModel)]="percentages[member.userId]"
+            class="w-20 border rounded px-2 py-1"
+            placeholder="0%"
+          />
+        }
+      </div>
+    }
+
+    @if (splitType === 'Exact') {
+      <p class="text-sm" [class.text-red-600]="exactTotal() !== amount">
+        Allocated: {{ exactTotal() | number: '1.2-2' }} / {{ amount ?? 0 | number: '1.2-2' }}
+      </p>
+    }
+    @if (splitType === 'Percentage') {
+      <p class="text-sm" [class.text-red-600]="percentageTotal() !== 100">
+        Total: {{ percentageTotal() }}% / 100%
+      </p>
+    }
+
+    @if (errorMessage) {
+      <p class="text-red-600 text-sm">{{ errorMessage }}</p>
+    }
+
+    <button (click)="onSubmit()" class="w-full bg-blue-600 text-white rounded py-2">
+      Add expense
+    </button>
+  </div>
+</div>

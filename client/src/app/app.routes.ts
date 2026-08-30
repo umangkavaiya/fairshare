@@ -33,4 +33,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/groups/group-detail/group-detail').then((m) => m.GroupDetail),
   },
+  {
+    path: 'groups/:groupId/expenses/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/expenses/add-expense/add-expense').then((m) => m.AddExpense),
+  },
 ];
