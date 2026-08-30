@@ -198,7 +198,7 @@ public class ExpenseService : IExpenseService
 
     // ---- helpers ----
 
-    private List<(Guid UserId, decimal Amount, decimal? Percentage)> CalculateSplits(string splitType, decimal amount, List<DTOs.Expenses.ExpenseParticipantInputDto> participants)
+    private List<(Guid UserId, decimal Amount, decimal? Percentage)> CalculateSplits(string splitType, decimal amount, List<ExpenseParticipantInputDto> participants)
     {
         return splitType switch
         {
@@ -287,9 +287,4 @@ public class ExpenseService : IExpenseService
         };
     }
 }
-namespace FairShare.Infrastructure.Services
-{
-    internal class ExpenseService
-    {
-    }
-}
+
