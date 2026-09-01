@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
+    public DbSet<Settlement> Settlements => Set<Settlement>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -93,5 +94,24 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
             new ExpenseCategory { Id = 5, Name = "Entertainment", Icon = "film" },
             new ExpenseCategory { Id = 6, Name = "Other", Icon = "tag" }
         );
+
+        builder.Entity<Settlement>(e =>
+        {
+            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.CurrencyCode).HasMaxLength(3).IsFixedLength();
+            e.HasIndex(x => x.GroupId);
+            e.HasIndex(x => x.PayerUserId);
+            e.HasIndex(x => x.PayeeUserId);
+
+            e.HasOne(x => x.Group).WithMany()
+             .HasForeignKey(x => x.GroupId).OnDelete(DeleteBehavior.Restrict);
+
+            // Two FKs to the same AppUser table — each needs an explicit, distinct
+            // navigation and DeleteBehavior.Restrict, or EF can't disambiguate them.
+            e.HasOne(x => x.Payer).WithMany()
+             .HasForeignKey(x => x.PayerUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Payee).WithMany()
+             .HasForeignKey(x => x.PayeeUserId).OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }
