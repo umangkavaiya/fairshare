@@ -39,4 +39,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/expenses/add-expense/add-expense').then((m) => m.AddExpense),
   },
+  {
+    path: 'groups/:groupId/balances',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/settlements/balances-view/balances-view').then((m) => m.BalancesView),
+  },
 ];

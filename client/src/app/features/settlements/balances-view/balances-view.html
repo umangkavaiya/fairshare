@@ -1,0 +1,45 @@
+<!-- client/src/app/features/settlements/balances-view/balances-view.html -->
+<div class="max-w-2xl mx-auto mt-10 p-6">
+  <h1 class="text-2xl font-bold mb-4">Balances</h1>
+  <ul class="space-y-2 mb-8">
+    @for (b of balances(); track b.userId) {
+      <li class="flex justify-between border rounded px-3 py-2">
+        <span>{{ b.displayName }}</span>
+        <span [class.text-green-600]="b.netBalance > 0" [class.text-red-600]="b.netBalance < 0">
+          {{ b.netBalance > 0 ? '+' : '' }}{{ b.netBalance | number: '1.2-2' }}
+        </span>
+      </li>
+    }
+  </ul>
+
+  <h2 class="text-lg font-semibold mb-2">Suggested settlements</h2>
+  @if (suggestions().length === 0) {
+    <p class="text-gray-500 mb-8">Everyone's settled up!</p>
+  } @else {
+    <ul class="space-y-2 mb-8">
+      @for (s of suggestions(); track s.fromUserId + s.toUserId) {
+        <li class="flex justify-between items-center border rounded px-3 py-2">
+          <span
+            >{{ s.fromDisplayName }} → {{ s.toDisplayName }}: {{ s.amount | number: '1.2-2' }}</span
+          >
+          <button (click)="recordSuggested(s)" class="text-blue-600 text-sm">Record as paid</button>
+        </li>
+      }
+    </ul>
+  }
+
+  <h2 class="text-lg font-semibold mb-2">Settlement history</h2>
+  <ul class="space-y-2">
+    @for (h of history(); track h.id) {
+      <li class="flex justify-between items-center border rounded px-3 py-2">
+        <span
+          >{{ h.payerDisplayName }} → {{ h.payeeDisplayName }}: {{ h.amount | number: '1.2-2' }}
+          <span class="text-xs text-gray-400">({{ h.status }})</span>
+        </span>
+        @if (needsMyConfirmation(h)) {
+          <button (click)="confirm(h.id)" class="text-green-600 text-sm">Confirm</button>
+        }
+      </li>
+    }
+  </ul>
+</div>
