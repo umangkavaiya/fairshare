@@ -46,7 +46,8 @@ public class SettlementService : ISettlementService
         var transactions = _debtSimplifier.Simplify(netBalances);
 
         var displayNames = await _db.GroupMembers
-            .Where(gm => gm.GroupId == groupId && gm.IsActive)
+        .Where(gm => gm.GroupId == groupId && gm.IsActive)
+        .Include(gm => gm.User)
             .ToDictionaryAsync(gm => gm.UserId, gm => gm.User.DisplayName);
 
         return transactions.Select(t => new SettlementSuggestionDto
