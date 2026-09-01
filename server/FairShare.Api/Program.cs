@@ -1,4 +1,11 @@
-using System.Text;
+using FairShare.Api.Filters;
+using FairShare.Api.Middleware;
+using FairShare.Application.Interfaces;
+using FairShare.Application.Services;
+using FairShare.Application.Settings;
+using FairShare.Domain.Entities;
+using FairShare.Infrastructure.Data;
+using FairShare.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -6,13 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using FairShare.Api.Filters;
-using FairShare.Api.Middleware;
-using FairShare.Application.Interfaces;
-using FairShare.Application.Settings;
-using FairShare.Domain.Entities;
-using FairShare.Infrastructure.Data;
-using FairShare.Infrastructure.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,6 +100,10 @@ builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 // Auto-register every FluentValidation validator in the Application assembly
 builder.Services.AddValidatorsFromAssembly(typeof(FairShare.Application.Interfaces.IAuthService).Assembly);
+
+builder.Services.AddScoped<IDebtSimplificationService, DebtSimplificationService>();
+builder.Services.AddScoped<ISettlementService, SettlementService>();
+
 
 builder.Services.AddCors(options =>
 {
