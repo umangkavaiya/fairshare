@@ -153,9 +153,28 @@ public class GroupService : IGroupService
         var invitee = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email)
             ?? throw new KeyNotFoundException("No FairShare account found with that email. Ask them to register first.");
 
-        var alreadyMember = await _db.GroupMembers.AnyAsync(gm => gm.GroupId == groupId && gm.UserId == invitee.Id && gm.IsActive);
-        if (alreadyMember)
-            throw new ArgumentException("This user is already a member of the group.");
+        var existingMembership = await _db.GroupMembers
+            .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == invitee.Id);
+
+        if (existingMembership is not null)
+        {
+            if (existingMembership.IsActive)
+                throw new ArgumentException("This user is already a member of the group.");
+
+            existingMembership.IsActive = true;
+            existingMembership.Role = GroupRole.Member;
+            existingMembership.JoinedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            return new GroupMemberDto
+            {
+                UserId = invitee.Id,
+                DisplayName = invitee.DisplayName,
+                Email = invitee.Email ?? string.Empty,
+                Role = existingMembership.Role.ToString(),
+                JoinedAt = existingMembership.JoinedAt
+            };
+        }
 
         var membership = new GroupMember { GroupId = groupId, UserId = invitee.Id, Role = GroupRole.Member };
         _db.GroupMembers.Add(membership);
