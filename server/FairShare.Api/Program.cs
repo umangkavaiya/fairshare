@@ -98,6 +98,8 @@ builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<ISplitCalculationService, FairShare.Application.Services.SplitCalculationService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
+builder.Services.AddScoped<IBudgetService, BudgetService>();
+
 // Auto-register every FluentValidation validator in the Application assembly
 builder.Services.AddValidatorsFromAssembly(typeof(FairShare.Application.Interfaces.IAuthService).Assembly);
 
