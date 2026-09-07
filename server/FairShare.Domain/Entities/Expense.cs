@@ -29,4 +29,6 @@ public class Expense : BaseEntity
     public AppUser PaidBy { get; set; } = null!;
     public ExpenseCategory? Category { get; set; }
     public ICollection<ExpenseSplit> Splits { get; set; } = new List<ExpenseSplit>();
+    public Guid? SubscriptionId { get; set; }
+    public Subscription? Subscription { get; set; }
 }
