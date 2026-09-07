@@ -21,6 +21,12 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
     public DbSet<Settlement> Settlements => Set<Settlement>();
+    public DbSet<Budget> Budgets => Set<Budget>();
+    public DbSet<BudgetPeriod> BudgetPeriods => Set<BudgetPeriod>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<FinancialAccountCategory> FinancialAccountCategories => Set<FinancialAccountCategory>();
+    public DbSet<FinancialAccount> FinancialAccounts => Set<FinancialAccount>();
+    public DbSet<FinancialAccountValue> FinancialAccountValues => Set<FinancialAccountValue>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -64,6 +70,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
              .HasForeignKey(x => x.PaidByUserId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Category).WithMany()
              .HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(x => new { x.SubscriptionId, x.ExpenseDate }).IsUnique();
+            e.HasOne(x => x.Subscription).WithMany()
+             .HasForeignKey(x => x.SubscriptionId).OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<ExpenseSplit>(e =>
@@ -112,6 +121,76 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
              .HasForeignKey(x => x.PayerUserId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Payee).WithMany()
              .HasForeignKey(x => x.PayeeUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Budget>(e =>
+        {
+            e.Property(x => x.MonthlyLimit).HasColumnType("decimal(18,2)");
+            e.Property(x => x.CurrencyCode).HasMaxLength(3).IsFixedLength();
+            e.Property(x => x.RowVersion).IsRowVersion();
+            e.HasIndex(x => x.UserId);
+            // one active budget per category per user — filtered so a deactivated
+            // budget doesn't block recreating one for the same category
+            e.HasIndex(x => new { x.UserId, x.CategoryId })
+             .IsUnique()
+             .HasFilter("[IsActive] = 1");
+            e.HasOne(x => x.User).WithMany()
+             .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Category).WithMany()
+             .HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<BudgetPeriod>(e =>
+        {
+            e.Property(x => x.CarriedInAmount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.EffectiveLimit).HasColumnType("decimal(18,2)");
+            e.Property(x => x.SpentAmount).HasColumnType("decimal(18,2)");
+            e.HasIndex(x => new { x.BudgetId, x.PeriodStart }).IsUnique();
+            e.HasOne(x => x.Budget).WithMany(b => b.Periods)
+             .HasForeignKey(x => x.BudgetId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Subscription>(e =>
+        {
+            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.CurrencyCode).HasMaxLength(3).IsFixedLength();
+            e.Property(x => x.RowVersion).IsRowVersion();
+            e.HasIndex(x => x.UserId);
+            e.HasIndex(x => x.NextBillingDate);
+            e.HasOne(x => x.User).WithMany()
+             .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Category).WithMany()
+             .HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // seed default net-worth categories
+        builder.Entity<FinancialAccountCategory>().HasData(
+            new FinancialAccountCategory { Id = 1, Name = "Cash & Bank", Icon = "wallet", AppliesToType = FinancialAccountType.Asset },
+            new FinancialAccountCategory { Id = 2, Name = "Investment", Icon = "trending-up", AppliesToType = FinancialAccountType.Asset },
+            new FinancialAccountCategory { Id = 3, Name = "Property", Icon = "home", AppliesToType = FinancialAccountType.Asset },
+            new FinancialAccountCategory { Id = 4, Name = "Vehicle", Icon = "car", AppliesToType = FinancialAccountType.Asset },
+            new FinancialAccountCategory { Id = 5, Name = "Loan", Icon = "file-text", AppliesToType = FinancialAccountType.Liability },
+            new FinancialAccountCategory { Id = 6, Name = "Credit Card", Icon = "credit-card", AppliesToType = FinancialAccountType.Liability },
+            new FinancialAccountCategory { Id = 7, Name = "Other", Icon = "tag", AppliesToType = null }
+        );
+
+        builder.Entity<FinancialAccount>(e =>
+        {
+            e.Property(x => x.CurrencyCode).HasMaxLength(3).IsFixedLength();
+            e.Property(x => x.RowVersion).IsRowVersion();
+            e.HasIndex(x => x.UserId);
+            e.HasOne(x => x.User).WithMany()
+             .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Category).WithMany()
+             .HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<FinancialAccountValue>(e =>
+        {
+            e.Property(x => x.Value).HasColumnType("decimal(18,2)");
+            e.HasIndex(x => new { x.FinancialAccountId, x.AsOfDate });
+            e.HasOne(x => x.FinancialAccount).WithMany(a => a.Values)
+             .HasForeignKey(x => x.FinancialAccountId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
